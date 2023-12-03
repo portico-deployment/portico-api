@@ -1,5 +1,5 @@
 bin
 node_modules
 zombienet-macos
-zombienet-config/*
+!zombienet-config/*
 templates/bin
