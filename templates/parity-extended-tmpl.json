@@ -1,0 +1,4 @@
+{
+    "spec": "./spec/parity-extended-chainspec.json",
+    "bin": "./bin/parity-extended-node"
+}
