@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import fs from 'fs/promises';
 import fastifyCors from '@fastify/cors';
 import { start } from '@zombienet/orchestrator';
-import { sanitizeNetwork, generateConfig } from './zombieHelpers.js';
+import { sanitizeNetwork, generateConfig, pidIsRunning } from './zombieHelpers.js';
 
 // replace with template registry!
 const registry = {
@@ -11,6 +11,9 @@ const registry = {
         "bin": "./bin/parity-extended-node"
     }
 };
+
+// replace with fastify decorated
+let globalNetwork;
 
 const fastify = Fastify({ logger: true });
 
@@ -32,7 +35,27 @@ fastify.post('/network', async (request, reply) => {
         spawnConcurrency: 5,
     });
 
+    globalNetwork = network;
     reply.send({ result: 'OK', network: sanitizeNetwork(network) });
+});
+
+fastify.get('/network', async (request, reply) => {
+    // At the moment we run one network
+    if(! globalNetwork) {
+        reply.send({ result: 'OK', running: false, msg: "Network not initialized!" });
+        return;
+    }
+
+    const pids = Object.keys(globalNetwork.nodesByName).reduce((memo, name) => {
+        memo.push(globalNetwork.client.processMap[name].pid);
+        return memo;
+    }, []);
+
+    // only return ok if all the nodes are running
+    const running = pids.every(pidIsRunning);
+    const msg = running ? "OK" : "One or more node/s are down";
+    reply.send({ result: 'OK', running, msg });
+
 });
 
 fastify.listen({ port: 4000 }, err => {
