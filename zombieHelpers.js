@@ -40,6 +40,15 @@ export async function generateConfig(config, template, ts) {
     return networkDef;
 }
 
+export function pidIsRunning(pid) {
+    try {
+      process.kill(pid, 0);
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+
 // internals
 async function customizeSpec(config, specPath, dstPath) {
     // read and customize the properties
