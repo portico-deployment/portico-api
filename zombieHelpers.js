@@ -43,10 +43,16 @@ export async function generateConfig(config, template, ts) {
 // internals
 async function customizeSpec(config, specPath, dstPath) {
     // read and customize the properties
-
     const content = (await fs.readFile(specPath)).toString();
     let spec = JSON.parse(content);
-    spec.properties = config.properties;
+    const {ss58, decimals, symbol} = config.properties;
+
+    spec.properties = {
+        "ss58Format": ss58,
+        "tokenDecimals": decimals,
+        "tokenSymbol": symbol,
+    };
+
     // write the custom spec
     await fs.writeFile(dstPath, JSON.stringify(spec, null, 4));
 }
