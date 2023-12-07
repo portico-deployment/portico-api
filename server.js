@@ -9,6 +9,10 @@ const registry = {
     "parity-extended-template": {
         "spec": "./spec/parity-extended-chainspec.json",
         "bin": "./bin/parity-extended-node"
+    },
+    "parity-frontier-template": {
+        "spec": "./spec/parity-frontier-chainspec.json",
+        "bin": "./bin/frontier-parachain-node"
     }
 };
 
