@@ -1,0 +1,4 @@
+{
+    "spec": "./spec/parity-frontier-chainspec.json",
+    "bin": "./bin/frontier-parachain-node"
+}
