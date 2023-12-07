@@ -33,7 +33,7 @@ fastify.get('/network/stop', async (_request, reply) => {
     }
     globalNetwork.stop();
     // clean network instance
-    globalNetwork = undefined
+    globalNetwork = undefined;
 
     reply.send({ result: 'OK' });
 });
