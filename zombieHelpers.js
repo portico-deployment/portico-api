@@ -1,14 +1,20 @@
 import fs from "fs/promises";
 import path from "path";
+import { generateKeyFromSeed } from './keyHelper.js';
 
-export function sanitizeNetwork(network) {
-    const relay = network.relay.map(sanitizeNode)
+export async function sanitizeNetwork(network) {
+    console.log(JSON.stringify(network, null, 4));
+    const relay = await Promise.all(network.relay.map( async (node) => {
+        return await sanitizeNode(node);
+    }));
 
-    const paras = Object.keys(network.paras).reduce((memo, paraId) => {
-        const nodes = network.paras[paraId].nodes.map(sanitizeNode);
-        memo[paraId] = nodes;
-        return memo;
-    }, {});
+    let paras = {};
+    for(const paraId of Object.keys(network.paras)) {
+        const nodes = await Promise.all(network.paras[paraId].nodes.map(async (node) => {
+            return await sanitizeNode(node)
+        }));
+        paras[paraId] = nodes;
+    }
 
     return {
         ns: network.namespaces,
@@ -89,12 +95,14 @@ function baseNetwork() {
     };
 };
 
-function sanitizeNode({ name, wsUri, prometheusUri, multiAddress }) {
+async function sanitizeNode({ name, wsUri, prometheusUri, multiAddress }) {
+    const account = await generateKeyFromSeed(name);
     const parts = multiAddress.split("/");
     return {
         name,
         wsUri,
         prometheusUri,
-        p2pId: parts[parts.length - 1]
+        p2pId: parts[parts.length - 1],
+        account
     }
 }
