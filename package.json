@@ -4,6 +4,11 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@polkadot/api": "^10.11.1",
+    "@polkadot/keyring": "^12.6.1",
+    "@polkadot/util-crypto": "^12.6.1",
+    "@polkadot/util": "^12.6.1",
+    "@zombienet/utils": "^0.0.24",
     "@fastify/cors": "^8.4.1",
     "@fastify/websocket": "^8.2.0",
     "@zombienet/orchestrator": "^0.0.68",

@@ -4,6 +4,7 @@ import fastifyCors from '@fastify/cors';
 import { start } from '@zombienet/orchestrator';
 import { sanitizeNetwork, generateConfig, pidIsRunning } from './zombieHelpers.js';
 
+
 // replace with template registry!
 const registry = {
     "parity-extended-template": {
@@ -36,7 +37,7 @@ fastify.post('/network', async (request, reply) => {
     });
 
     globalNetwork = network;
-    reply.send({ result: 'OK', network: sanitizeNetwork(network) });
+    reply.send({ result: 'OK', network: await sanitizeNetwork(network) });
 });
 
 fastify.get('/network', async (request, reply) => {
