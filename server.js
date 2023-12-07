@@ -27,6 +27,18 @@ fastify.register(fastifyCors, {
     origin: true // Or specify domains, e.g., 'http://localhost:3000'
 });
 
+fastify.post('/network/stop', async (_request, reply) => {
+    if(! globalNetwork) {
+        reply.send({ result: 'OK', running: false, msg: "Network not initialized!" });
+        return;
+    }
+    globalNetwork.stop();
+    // clean network instance
+    globalNetwork = undefined;
+
+    reply.send({ result: 'OK' });
+});
+
 
 fastify.post('/network', async (request, reply) => {
     const template = registry[request.body.template];
