@@ -27,6 +27,7 @@ fastify.register(fastifyCors, {
     origin: true // Or specify domains, e.g., 'http://localhost:3000'
 });
 
+
 fastify.post('/network/stop', async (_request, reply) => {
     if(! globalNetwork) {
         reply.send({ result: 'OK', running: false, msg: "Network not initialized!" });
@@ -75,7 +76,7 @@ fastify.get('/network', async (request, reply) => {
 
 });
 
-fastify.listen({ port: 4000 }, err => {
+fastify.listen({ host: '0.0.0.0', port: 4000 }, err => {
     if (err) {
         console.error(err);
         process.exit(1);
