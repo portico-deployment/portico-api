@@ -10,7 +10,6 @@
     "@polkadot/util": "^12.6.1",
     "@zombienet/utils": "^0.0.24",
     "@fastify/cors": "^8.4.1",
-    "@fastify/websocket": "^8.2.0",
     "@zombienet/orchestrator": "^0.0.68",
     "fastify": "^4.24.3",
     "fastify-websocket": "^4.3.0",
