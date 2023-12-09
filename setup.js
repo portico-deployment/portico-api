@@ -6,6 +6,7 @@ import { finished } from 'stream/promises';
 import decompress from 'decompress';
 import decompressTargz from 'decompress-targz';
 import chalk from 'chalk';
+import fetch from 'node-fetch';
 
 // portico-ui build
 const BUILD  = "build/index.html";
@@ -13,6 +14,8 @@ const BUILD_ASSET = "https://github.com/portico-deployment/portico-ui/releases/d
 
 const BINS_LINUX = "https://github.com/portico-deployment/portico-api/releases/download/v0.0.1/bins_linux.tar.gz";
 const BINS_MAC = "https://github.com/portico-deployment/portico-api/releases/download/v0.0.1/bins_mac.tar.gz";
+
+const TEMPLATES = "https://github.com/portico-deployment/portico-api/releases/download/v0.0.1/templates.tar.gz";
 
 const SUPPORTED = [
     "linux/x64",
@@ -71,18 +74,22 @@ export async function init(rootPath) {
         // create dirs bin / templates/bin
         await Promise.all([
             fs.mkdir(`${rootPath}/bin`, {recursive: true}),
-            //fs.mkdir(`${rootPath}/templates/bin`, {recursive: true})
+            // fs.mkdir(`${rootPath}/templates`, {recursive: true})
         ]);
 
         // download file
         const url = platform === 'linux' ? BINS_LINUX : BINS_MAC;
         const dstFile = `${tmp}/bins.tar.gz`;
         await getAsset(url, dstFile);
+        const dstTemplatesFile = `${tmp}/templates.tar.gz`;
+        await getAsset(TEMPLATES, dstTemplatesFile);
         // decompress
         await decompress(dstFile, `${tmp}/bin`, { plugins: [ decompressTargz() ] });
+        await decompress(dstTemplatesFile, `${tmp}`, { plugins: [ decompressTargz() ] });
 
         // mv
         await fs.rename(`${tmp}/bin`, `${rootPath}/bin`);
+        await fs.rename(`${tmp}/templates`, `${rootPath}/templates`);
         console.log(chalk.green('✅ BINS Done'));
     }
 
@@ -94,7 +101,14 @@ async function getAsset(url, dstFile, rootPath) {
     const response = await fetch(url);
 
     const stream = createWriteStream(dstFile);
-    await finished(Readable.fromWeb(response.body).pipe(stream));
+    await new Promise((resolve, reject) => {
+        response.body.pipe(stream);
+        response.body.on("error", reject);
+        stream.on("finish", resolve);
+      });
+
+    // for node 20 (currently unsupported by pkg)
+    //await finished(Readable.fromWeb(response.body).pipe(stream));
 }
 
 async function fileExist(path, isDir = false) {

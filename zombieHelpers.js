@@ -3,7 +3,6 @@ import path from "path";
 import { generateKeyFromSeed } from './keyHelper.js';
 
 export async function sanitizeNetwork(network) {
-    // console.log(JSON.stringify(network, null, 4));
     const relay = await Promise.all(network.relay.map( async (node) => {
         return await sanitizeNode(node);
     }));
