@@ -3,16 +3,6 @@ import fs from 'fs/promises';
 import fastifyCors from '@fastify/cors';
 import { start } from '@zombienet/orchestrator';
 import { sanitizeNetwork, generateConfig, pidIsRunning } from './zombieHelpers.js';
-import { init } from './setup.js';
-
-import { URL } from 'url';
-
-// Will contain trailing slash
-const __dirname = new URL('.', import.meta.url).pathname;
-console.log(__dirname);
-
-
-
 
 // replace with template registry!
 const registry = {
@@ -26,15 +16,7 @@ const registry = {
     }
 };
 
-// use args to trigger the setup
-const cmd = (process.argv[2] && process.argv[2].trim());
-switch( cmd ) {
-    case 'setup':
-        init(__dirname).catch(console.log);
-        break;
-    case 'clean':
-        break;
-}
+let rootPath;
 
 // replace with fastify decorated
 let globalNetwork;
@@ -63,9 +45,11 @@ fastify.post('/network', async (request, reply) => {
     const template = registry[request.body.template];
     if (!template) return reply.status(400).send({ code: 400, msg: "invalid template" });
 
+    const zombienetConfigs = `${rootPath}/zombienet-config`;
+    await fs.mkdir(zombienetConfigs, {recursive: true});
     const requestTS = new Date().toISOString().split(".")[0].replaceAll(/[:-]/g, "");
-    const networkTopology = await generateConfig(request.body, template, requestTS);
-    await fs.writeFile(`./zombienet-config/config_${requestTS}_generated.json`, JSON.stringify(networkTopology, null, 4));
+    const networkTopology = await generateConfig(request.body, template, requestTS, zombienetConfigs);
+    await fs.writeFile(`${zombienetConfigs}/config_${requestTS}_generated.json`, JSON.stringify(networkTopology, null, 4));
     // needs some validation here
     const network = await start("", networkTopology, {
         spawnConcurrency: 5,
@@ -94,7 +78,8 @@ fastify.get('/network', async (request, reply) => {
 
 });
 
-if( !cmd ) {
+export function startBackend(customPath) {
+    if(customPath) rootPath = customPath;
     fastify.listen({ port: 4000 }, err => {
         if (err) {
             console.error(err);

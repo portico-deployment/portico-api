@@ -3,7 +3,7 @@ import path from "path";
 import { generateKeyFromSeed } from './keyHelper.js';
 
 export async function sanitizeNetwork(network) {
-    console.log(JSON.stringify(network, null, 4));
+    // console.log(JSON.stringify(network, null, 4));
     const relay = await Promise.all(network.relay.map( async (node) => {
         return await sanitizeNode(node);
     }));
@@ -23,8 +23,8 @@ export async function sanitizeNetwork(network) {
     }
 }
 
-export async function generateConfig(config, template, ts) {
-    const customSpecPath = `./zombienet-config/spec_${ts}_generated.json`;
+export async function generateConfig(config, template, ts, zombienetConfigs) {
+    const customSpecPath = `${zombienetConfigs}/spec_${ts}_generated.json`;
     const customSpec = await customizeSpec(config, path.join("./templates", template.spec), customSpecPath);
     const para = {
         "id": config.para_id,
@@ -37,7 +37,7 @@ export async function generateConfig(config, template, ts) {
         "collator_groups": [{
             "name": "para-collator",
             "count": config.collators_count,
-            "command": path.join("./templates", template.bin)
+            "command": template.bin //TODO: resolve templates paths path.join("./templates", template.bin)
         }]
     };
 
