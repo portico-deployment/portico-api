@@ -3,6 +3,12 @@ import fs from 'fs/promises';
 import fastifyCors from '@fastify/cors';
 import { start } from '@zombienet/orchestrator';
 import { sanitizeNetwork, generateConfig, pidIsRunning } from './zombieHelpers.js';
+import { init } from './setup.js';
+
+import { URL } from 'url';
+// Will contain trailing slash
+const __dirname = new URL('.', import.meta.url).pathname;
+console.log(__dirname);
 
 
 // replace with template registry!
@@ -16,6 +22,16 @@ const registry = {
         "bin": "./bin/frontier-parachain-node"
     }
 };
+
+// use args to trigger the setup
+const cmd = (process.argv[2] && process.argv[2].trim());
+switch( cmd ) {
+    case 'setup':
+        await init(__dirname);
+        break;
+    case 'clean':
+        break;
+}
 
 // replace with fastify decorated
 let globalNetwork;
