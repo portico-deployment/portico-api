@@ -6,9 +6,12 @@ import { sanitizeNetwork, generateConfig, pidIsRunning } from './zombieHelpers.j
 import { init } from './setup.js';
 
 import { URL } from 'url';
+
 // Will contain trailing slash
 const __dirname = new URL('.', import.meta.url).pathname;
 console.log(__dirname);
+
+
 
 
 // replace with template registry!
@@ -27,7 +30,7 @@ const registry = {
 const cmd = (process.argv[2] && process.argv[2].trim());
 switch( cmd ) {
     case 'setup':
-        await init(__dirname);
+        init(__dirname).catch(console.log);
         break;
     case 'clean':
         break;
@@ -91,10 +94,12 @@ fastify.get('/network', async (request, reply) => {
 
 });
 
-fastify.listen({ port: 4000 }, err => {
-    if (err) {
-        console.error(err);
-        process.exit(1);
-    }
-    console.log('Server listening on port 4000');
-});
+if( !cmd ) {
+    fastify.listen({ port: 4000 }, err => {
+        if (err) {
+            console.error(err);
+            process.exit(1);
+        }
+        console.log('Server listening on port 4000');
+    });
+}
