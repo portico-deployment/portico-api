@@ -24,20 +24,26 @@ const SUPPORTED = [
 
 const bins = [
     // polkadot bins
-    "bin/poladot", "bin/poladot-execute-worker", "bin/poladot-prepare-worker",
+    "bin/polkadot", "bin/polkadot-execute-worker", "bin/polkadot-prepare-worker",
     // templates
-    "templates/bin/parity-extended-node", "templates/bin/frontier-parachain-node"
+    // TODO (we should use the templates dir)
+    // "templates/bin/parity-extended-node", "templates/bin/frontier-parachain-node"
+    "bin/parity-extended-node", "bin/frontier-parachain-node"
 ];
+
+const TEMPLATES_DIR = "templates";
 
 export async function init(rootPath) {
     console.log(chalk.magenta('🏛  Portico setup initialization...'));
-    console.log(chalk.magenta('🔎 Checking assets UI/BINS'));
+    console.log(chalk.magenta('🔎 Checking assets UI/BINS/Templates'));
     let needsBins = false;
     // check if the needed files are in place
     for( const bin of bins ) {
         const exist =  await fileExist(`${rootPath}/${bin}`);
         // change IFF not exist
         needsBins = exist ? needsBins : true;
+        // TODO: add debug
+        // console.log(`${rootPath}/${bin}`, exist, needsBins);
     }
 
     const needsBuild = !await fileExist(`${rootPath}/${BUILD}`);
@@ -81,18 +87,26 @@ export async function init(rootPath) {
         const url = platform === 'linux' ? BINS_LINUX : BINS_MAC;
         const dstFile = `${tmp}/bins.tar.gz`;
         await getAsset(url, dstFile);
-        const dstTemplatesFile = `${tmp}/templates.tar.gz`;
-        await getAsset(TEMPLATES, dstTemplatesFile);
         // decompress
         await decompress(dstFile, `${tmp}/bin`, { plugins: [ decompressTargz() ] });
-        await decompress(dstTemplatesFile, `${tmp}`, { plugins: [ decompressTargz() ] });
 
         // mv
         await fs.rename(`${tmp}/bin`, `${rootPath}/bin`);
-        await fs.rename(`${tmp}/templates`, `${rootPath}/templates`);
         console.log(chalk.green('✅ BINS Done'));
     }
 
+    const needsTemplates = !await fileExist(`${rootPath}/${TEMPLATES_DIR}`, true);
+    if(needsTemplates) {
+        console.log(chalk.magenta('\t Initializing Templates...'));
+        const dstTemplatesFile = `${tmp}/templates.tar.gz`;
+        await getAsset(TEMPLATES, dstTemplatesFile);
+        await decompress(dstTemplatesFile, `${tmp}`, { plugins: [ decompressTargz() ] });
+        await fs.rename(`${tmp}/templates`, `${rootPath}/templates`);
+        console.log(chalk.green('✅ Templates Done'));
+    }
+
+    // remove tmp dir
+    await fs.rm(`${rootPath}/tmp`, { recursive: true, force: true });
     console.log(chalk.green.bold('🏛  Portico ready!'));
 }
 
@@ -128,6 +142,15 @@ async function fileExist(path, isDir = false) {
     } catch (err) {
         return false;
     }
+}
+
+export async function clean(rootPath) {
+    await Promise.all([
+        fs.rm(`${rootPath}/build`, { recursive: true, force: true }),
+        fs.rm(`${rootPath}/bin`, { recursive: true, force: true }),
+        fs.rm(`${rootPath}/templates`, { recursive: true, force: true }),
+        fs.rm(`${rootPath}/zombienet-config`, { recursive: true, force: true })
+    ]);
 }
 
 // ( async () => {
